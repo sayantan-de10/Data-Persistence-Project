@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
@@ -10,12 +10,14 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
-    public Text ScoreText;
+    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI highScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
-    
+    public int highScore;
+    public string highScoreName;
     private bool m_GameOver = false;
 
     
@@ -30,11 +32,18 @@ public class MainManager : MonoBehaviour
         {
             for (int x = 0; x < perLine; ++x)
             {
-                Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
+                Vector3 position = new Vector3(268 - 1.5f + step * x, 150 + 2.5f + i * 0.3f, 0);
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
             }
+        }
+
+        highScoreText.text = "Best score: " + MainHandler.Instance.playerHighScoreName + ": " + MainHandler.Instance.playerHighScore;
+
+        if (MainHandler.Instance.playerHighScoreName == "")
+        {
+            MainHandler.Instance.playerHighScoreName = "nobody";
         }
     }
 
@@ -55,6 +64,7 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            SetHighScore();
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -65,12 +75,31 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        scoreText.text = "Score : " + m_Points;
+        MainHandler.Instance.playerScore = m_Points;
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    private void SetHighScore()
+    {
+        if (m_Points > MainHandler.Instance.playerHighScore)
+        {
+            highScore = m_Points;
+            highScoreName = MainHandler.Instance.playerName;
+
+            if (MainHandler.Instance.playerName != MainHandler.Instance.playerHighScoreName)
+                MainHandler.Instance.playerHighScoreName = MainHandler.Instance.playerName;
+
+            if (MainHandler.Instance.playerScore >= MainHandler.Instance.playerHighScore)
+                MainHandler.Instance.playerHighScore = highScore;
+
+            highScoreText.text = "Best score: " + MainHandler.Instance.playerHighScoreName + ": " + MainHandler.Instance.playerHighScore;
+
+        }
     }
 }
